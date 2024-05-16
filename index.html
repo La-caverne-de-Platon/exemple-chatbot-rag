@@ -116,7 +116,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        query: message + ' Explique comme à un enfant de 16 ans; ne donne pas d extrait de code. ' + ' Tu dois répondre en utilisant uniquement le point de vue de ' + author,
+                        query: message + ' Explique comme à un adulte en Master de philosophie; ne donne pas d extrait de code. ' + ' Tu dois répondre en utilisant uniquement le point de vue de ' + author + ' et parler de lui à la première personne.',
                         project: '3ae8fecb-7961-4938-ad55-22beb3217a8a',
                         repos: ['https://github.com/la-caverne-de-platon/auteurs_platon/tree/main']
                     })
@@ -146,28 +146,25 @@
         }
 
         function addMessageToChat(sender, message) {
-            const chatContainer = document.getElementById('replies');
-            if(message.includes('"}')) return;
+            let chatContainer = document.getElementById('replies');
+            if(message.includes('"}')){
+                message = message.replace('"}', '');
+            }
             if(message.includes('"answer": "')){
                 message = message.replace('"answer": "', '');
             }
 
             if(message.includes('\n')){
+                chatContainer = false;
+            }
+
+            if (chatContainer) {
+                chatContainer.textContent += message;
+            } else {
                 const newMessage = document.createElement('p');
-                newMessage.classList.add('style-41');
                 newMessage.textContent = sender + ": " + message;
                 const chatContainer = document.getElementById('replies');
                 chatContainer.appendChild(newMessage);
-            }else{
-                if (chatContainer) {
-                    chatContainer.textContent += message;
-                } else {
-                    const newMessage = document.createElement('p');
-                    newMessage.classList.add('style-41');
-                    newMessage.textContent = sender + ": " + message;
-                    const chatContainer = document.getElementById('replies');
-                    chatContainer.appendChild(newMessage);
-                }
             }
 
         }
@@ -175,3 +172,4 @@
 </body>
 
 </html>
+
