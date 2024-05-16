@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemple ChatBot RAG - JS</title>
+    <style>
+        body {
+            background-color: #0e1117;
+            font-family: 'Source Sans Pro', sans-serif;
+            color: white;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+            max-width: 736px;
+            margin: 0 auto;
+            padding: 0 16px;
+            box-sizing: border-box;
+        }
+
+        .heading {
+            font-size: 44px;
+            font-weight: 700;
+            margin: 20px 0 16px;
+            text-align: left;
+        }
+
+        .question {
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        #user_input {
+            width: 100%;
+            min-height: 95px;
+            resize: vertical;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(250, 250, 250, 0.2);
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0);
+            color: white;
+            font-size: 16px;
+            line-height: 22.4px;
+            caret-color: white;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        #submit-button {
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 400;
+            padding: 10px 20px;
+            border: 1px solid rgba(250, 250, 250, 0.2);
+            border-radius: 8px;
+            color: white;
+            background-color: rgb(19, 23, 32);
+            transition: background-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        #submit-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #replies {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            text-align: justify;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="heading">Exemple RAG - Discuter avec Platon</h1>
+        <p class="question">Posez une question à Platon.</p>
+        <label for="user_input">Votre question :</label>
+        <textarea id="user_input" placeholder="Bonjour, écris ta question ici." rows="3"></textarea>
+        <button id="submit-button">Cliquez pour obtenir une réponse</button>
+        <div id="replies"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const button = document.getElementById('submit-button');
+            button.addEventListener('click', () => {
+                const userInput = document.getElementById('user_input').value;
+                const author = "Platon";
+                button.disabled = true;
+                button.innerHTML = "Attendez, le bot élabore une réponse...";
+                sendMessage(userInput, author)
+                    .then(() => {
+                        button.disabled = false;
+                        button.innerHTML = "Cliquez pour obtenir une réponse";
+                    });
+            });
+        });
+
+        async function sendMessage(message, author) {
+            message = message.replace(/'/g, ' ');
+            try {
+                const response = await fetch('https://corsproxy.io/?https://www.phorm.ai/api/db/generate_answer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: message + ' Explique comme à un enfant de 16 ans; ne donne pas d extrait de code. ' + ' Tu dois répondre en utilisant uniquement le point de vue de ' + author,
+                        project: '3ae8fecb-7961-4938-ad55-22beb3217a8a',
+                        repos: ['https://github.com/la-caverne-de-platon/auteurs_platon/tree/main']
+                    })
+                });
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let MetanswerChunk = '';
+                let answerChunk = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+
+                    MetanswerChunk += chunk;
+                    console.log(chunk)
+
+                    if (MetanswerChunk.includes('"answer":')) {
+                        answerChunk +=chunk;
+                        addMessageToChat(author, answerChunk);
+                        answerChunk = '';
+                    }
+                }
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+
+        function addMessageToChat(sender, message) {
+            const chatContainer = document.getElementById('replies');
+            if(message.includes('"}')) return;
+            if(message.includes('"answer": "')){
+                message = message.replace('"answer": "', '');
+            }
+
+            if(message.includes('\n')){
+                const newMessage = document.createElement('p');
+                newMessage.classList.add('style-41');
+                newMessage.textContent = sender + ": " + message;
+                const chatContainer = document.getElementById('replies');
+                chatContainer.appendChild(newMessage);
+            }else{
+                if (chatContainer) {
+                    chatContainer.textContent += message;
+                } else {
+                    const newMessage = document.createElement('p');
+                    newMessage.classList.add('style-41');
+                    newMessage.textContent = sender + ": " + message;
+                    const chatContainer = document.getElementById('replies');
+                    chatContainer.appendChild(newMessage);
+                }
+            }
+
+        }
+    </script>
+</body>
+
+</html>
