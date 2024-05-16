@@ -33,11 +33,20 @@ https://github.com/La-caverne-de-Platon/auteurs_platon/tree/main
 Vous trouverez [les informations à changer ici dans le script Python](https://github.com/La-caverne-de-Platon/exemple-chatbot-rag/blob/fc33d693085a18cfea134692451a04afc5bb1a24/exemple_platon.py#L31):
 
 ```python
-    # Ici les informations vis à vis du philosophe, il faut toujours relier le projet Phorm à un repo Github
-    payload = {
-        "query": query,
-        "project": "8f603354-e047-48cc-ad66-717a8ecdb598",
-        "repos": ["https://github.com/la-caverne-de-platon/auteurs_platon/tree/main"]
-    }
+# Ici les informations vis à vis du philosophe, il faut toujours relier le projet Phorm à un repo Github
+payload = {
+    "query": query,
+    "project": "8f603354-e047-48cc-ad66-717a8ecdb598",
+    "repos": ["https://github.com/la-caverne-de-platon/auteurs_platon/tree/main"]
+}
 ```
 
+Ou encore [ici pour le script JavaScript](https://github.com/La-caverne-de-Platon/exemple-chatbot-rag/blob/bad873ccb2b65c0d57d57db560f47769d16d7b12/index.html#L118) :
+
+```js
+body: JSON.stringify({
+    query: message + ' Explique comme à un enfant de 16 ans; ne donne pas d extrait de code. ' + ' Tu dois répondre en utilisant uniquement le point de vue de ' + author,
+    project: '3ae8fecb-7961-4938-ad55-22beb3217a8a',
+    repos: ['https://github.com/la-caverne-de-platon/auteurs_platon/tree/main']
+})
+```
